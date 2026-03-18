@@ -13,11 +13,11 @@
 
 ## Overview
 
-**OemgaSqueeze** is a lightweight, purpose-built neural network compiler that translates PyTorch 1D CNN and Linear models into highly optimized, zero-dependency C code.
+**OemgaSqueeze** compiles PyTorch models into lean, firmware-native C for ultra-constrained edge devices.
 
-Designed for ultra-constrained edge AI, it removes the overhead of heavy third-party inference runtimes and instead statically compiles models into a standalone execution pipeline. The generated output is built to fit deeply embedded deployment settings, with a strong focus on **biosensor intelligence**, **predictable memory usage**, and **Zephyr RTOS integration**.
+No heavyweight runtime. No dependency bloat. Just deterministic neural inference, lowered into a static execution path built for real embedded hardware.
 
-Rather than acting as a generic inference runtime, OemgaSqueeze follows a compile-first philosophy: take a trained model, lower it into a static embedded execution plan, and emit lean C code that is transparent, portable, and firmware-friendly.
+Designed for biosignal and sensor intelligence, it brings a compile-first approach to edge AI: transparent, portable, zero-dependency code ready for Zephyr-class deployment.
 
 ## Why OemgaSqueeze?
 
