@@ -1,4 +1,4 @@
-<h1 align="center">OemgaSqueeze</h1>
+<h1 align="center">OeMga.me Squeeze</h1>
 
 <p align="center">
   <strong>A neural network compiler stack for ultra-low-power biosensor intelligence</strong>
@@ -40,74 +40,78 @@ This makes it especially relevant for embedded systems where memory, latency, an
   * **Pre-Flight Hardware Cost Analysis:** Provides a breakdown of estimated Flash and RAM requirements before deployment, including model parameters, double buffers, and scratch memory.
   * **Host-to-Target Verification:** Generates a lightweight host-side verifier to compare generated C inference against the original PyTorch model using metrics such as macro F1 and logit difference reporting.
 
-## Ideal Use Cases
-
-OemgaSqueeze is optimized for low-power, continuous embedded inference workloads.
-
-### Biosensor Intelligence
-
-Designed for intelligent sensing systems where models must execute directly on-device under strict resource limits. It is highly optimized for processing continuous 1D time-series data, such as real-time EMG signal classification, directly at the edge.
-
-### Open Embedded Platforms
-
-Provides a seamless, highly efficient firmware generation path for custom wearable bio-interaction platforms and edge devices utilizing ultra-low-power microcontrollers like the nRF54 or nRF52 families.
-
-### Strict RTOS Environments
-
-A strong fit for systems where the following are critical:
-
-  * Bounded memory usage
-  * Deterministic execution
-  * Minimal flash footprint
-  * Transparent generated code
-  * Straightforward integration into firmware stacks
-
 ## Installation
 
-OemgaSqueeze is packaged for modern Python environments. It is recommended to install it within a virtual environment.
+OemgaSqueeze is packaged for modern Python environments. It is highly recommended to install it within a virtual environment.
 
 ```bash
-git clone https://github.com/yourusername/oemgasqueeze.git
-cd oemgasqueeze
+git clone https://github.com/OeMga-me/oemga-squeeze.git
+cd oemga-squeeze
 pip install -e .
 ```
 
-## Quick Start
+## End-to-End Example
 
-### Command Line Interface
+Because accurate INT8 quantization requires real calibration data, OemgaSqueeze relies on a clean Python API rather than a generic command-line interface.
 
-You can compile a saved PyTorch model directly to a Zephyr application using the CLI:
-
-```bash
-oemga-squeeze path/to/your_model.pt --out build_zephyr/app/src/model --backend oemga_native_int8
-```
-
-### Python API
-
-For deeper integration into your training pipeline or custom export scripts:
+Below is a complete, self-contained script. You can copy this into a file named `example.py` and run it immediately (`python example.py`) to watch the compiler trace a dummy model, estimate its hardware costs, generate Zephyr C code, and verify the math.
 
 ```python
 import torch
-from oemgasqueeze.core import OemgaSqueeze
+import torch.nn as nn
+from oemgasqueeze import OemgaSqueeze
 
-# Load your trained model and example input
-model = torch.load("my_1d_cnn.pt")
-example_input = torch.randn(1, 1, 64)
-calibration_data = torch.randn(100, 1, 64)
+# 1. Define a supported 1D architecture
+class Dummy1DCNN(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv = nn.Conv1d(in_channels=1, out_channels=4, kernel_size=3, padding=1)
+        self.relu = nn.ReLU()
+        self.pool = nn.MaxPool1d(kernel_size=2, stride=2)
+        self.flatten = nn.Flatten()
+        self.fc = nn.Linear(in_features=4 * 32, out_features=4)
 
-# Initialize the compiler
+    def forward(self, x):
+        x = self.pool(self.relu(self.conv(x)))
+        return self.fc(self.flatten(x))
+
+# 2. Generate synthetic data (Batch, Channels, Length)
+# In production, replace this with your real biosensor dataset
+input_shape = (1, 64)
+example_input = torch.randn(1, *input_shape)
+calibration_data = torch.randn(100, *input_shape) # Needed for INT8 scaling
+X_test = torch.randn(50, *input_shape)
+y_test = torch.randint(0, 4, (50,))
+
+# 3. Initialize the compiler
+model = Dummy1DCNN().eval()
 compiler = OemgaSqueeze(
     model=model,
     example_input=example_input,
     calibration_data=calibration_data,
-    output_dir="zephyr_workspace/app",
-    prefer_int8_inference=True
+    output_dir="build_zephyr/app"
 )
 
-# Run the full compilation and codegen pipeline
-artifacts = compiler.run_step5()
-print(f"Generated Zephyr application in: {artifacts.output_root}")
+# 4. Compile to Zephyr C Code
+print("Starting Compilation Pipeline...")
+artifacts = compiler.compile(backend="oemga_native_int8")
+print(f"Firmware generated in: {artifacts.output_root}")
+
+# 5. Verify the generated C Model vs the PyTorch Model
+print("\nStarting Verification...")
+report = compiler.verify(X_test, y_test)
+print(f"Prediction Agreement: {report['comparison']['prediction_agreement'] * 100:.2f}%")
 ```
+
+## The Compilation Pipeline
+
+When you call `.compile()`, OemgaSqueeze executes a 5-step pipeline, exposing transparency at every layer:
+
+1.  **Frontend Normalization:** Uses `torch.fx` to trace the `nn.Module` and extract a normalized computational graph.
+2.  **IR Lowering:** Maps PyTorch operations to a backend-independent Intermediate Representation (IR) with explicit shapes and datatypes.
+3.  **Cost Analysis:** Statically calculates MACs, parameter bytes, and peak activation memory to estimate embedded deployment viability.
+4.  **Backend Memory Planning:** Lowers the IR to an `oemga_native_int8` execution plan, scheduling static ping-pong memory buffers.
+5.  **Code Generation:** Emits quantized weights, scales, and executable C/Zephyr code.
 
 ## Limitations (v1.0)
 
@@ -115,3 +119,5 @@ To maintain its strict, lightweight footprint, the current version supports a ta
 
   * **Operations:** `Conv1d` (groups=1), `Linear`, `MaxPool1d`, `ReLU`, `Reshape` (Flatten).
   * **Topology:** Currently supports sequential models with exactly one input tensor.
+  * **Pooling Constraints:** `return_indices=True` and `ceil_mode=True` are not supported in `MaxPool1d`.
+
