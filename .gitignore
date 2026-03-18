@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+
+# Environments
+.venv/
+ven4/
+env/
+
+# Build and Output dirs
+build/
+dist/
+oemga_out/
+build_zephyr/
+demo_build_zephyr/
+
+# OS generated files
+.DS_Store

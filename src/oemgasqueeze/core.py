@@ -196,7 +196,13 @@ class OemgaSqueeze:
         self.calibration_data = calibration_data if calibration_data is not None else example_input
 
         self.output_dir = output_dir
-        self.nn_layers_path = nn_layers_path
+        # If the user didn't provide a custom path, and it's not in the current directory,
+        # look for it inside the package folder (next to core.py)
+        if nn_layers_path == "nn_layers.h" and not os.path.exists(nn_layers_path):
+            pkg_dir = os.path.dirname(os.path.abspath(__file__))
+            self.nn_layers_path = os.path.join(pkg_dir, "nn_layers.h")
+        else:
+            self.nn_layers_path = nn_layers_path
         self.optimizations = optimizations if optimizations else []
         self.prefer_int8_inference = prefer_int8_inference
         self.strict = strict
@@ -2587,3 +2593,32 @@ class OemgaSqueeze:
 
         print(f"Verification report saved to: {report_path}")
         return report
+
+    def compile(self, backend: str = "oemga_native_int8") -> CodegenArtifacts:
+        """
+        Compiles the loaded PyTorch model into static Zephyr C code.
+        This is the primary user-facing method, automatically handling the
+        entire pipeline from tracing to codegen.
+        """
+        print(f"\n[OemgaSqueeze] Initiating compilation for backend: {backend}")
+        
+        # If the user requested a specific backend, ensure Step 4 uses it
+        if self.lowered_plan is None or self.lowered_plan.backend != backend:
+            self.run_step4(backend=backend)
+            
+        # run_step5 automatically triggers any missing prerequisites (Steps 1-3)
+        return self.run_step5()
+
+    def verify(self, X_test: torch.Tensor, y_test: Any) -> Dict[str, Any]:
+        """
+        Verifies the generated C model against the original PyTorch model
+        using the provided test dataset. Returns a comprehensive metrics report.
+        """
+        print("\n[OemgaSqueeze] Initiating host-to-target C vs PyTorch verification...")
+        
+        # Ensure the model is actually compiled before trying to verify it
+        if self.codegen_artifacts is None:
+            print("Model not compiled yet. Auto-triggering compilation...")
+            self.compile()
+            
+        return self.evaluate_c_vs_pytorch_f1(X_test, y_test)

@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "oemgasqueeze"
+version = "0.1.0"
+description = "A neural network compiler stack for ultra-low-power biosensor intelligence."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "torch>=2.2.2",
+    "numpy>=1.26.4",
+]
+
+[project.urls]
+Homepage = "https://github.com/OeMga-me/oemga-squeeze"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/oemgasqueeze"]
