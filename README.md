@@ -1,4 +1,4 @@
-<h1 align="center">OeMga.me Squeeze</h1>
+<h1 align="center">OemgaSqueeze</h1>
 
 <p align="center">
   <strong>A neural network compiler stack for ultra-low-power biosensor intelligence</strong>
@@ -7,82 +7,70 @@
 <p align="center">
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"/>
-  <img src="https://img.shields.io/badge/PyTorch-Frontend-ee4c2c.svg" alt="PyTorch Frontend"/>
+  </a>
+  <img src="https://img.shields.io/badge/Frontend-PyTorch-ee4c2c.svg" alt="PyTorch Frontend"/>
   <img src="https://img.shields.io/badge/Codegen-Pure%20C-00599C.svg" alt="Pure C Codegen"/>
-  <img src="https://img.shields.io/badge/Quantization-INT8-7A3E9D.svg" alt="INT8 Quantization"/>
   <img src="https://img.shields.io/badge/Target-Zephyr%20RTOS-black.svg" alt="Zephyr RTOS"/>
-  <img src="https://img.shields.io/badge/Focus-ARM%20Cortex--M-0091BD.svg" alt="ARM Cortex-M"/>
 </p>
 
-**OemgaSqueeze** is a lightweight neural network compiler that translates PyTorch 1D CNN and Linear models into highly optimized, zero-dependency C code.
+## Overview
 
-Built specifically for ultra-constrained edge AI, it removes the need for heavy third-party inference runtimes and instead statically compiles your model into a standalone execution pipeline. The generated code is designed for embedded deployment, with a strong focus on **Zephyr RTOS**, **wearable biosignal processing**, and **ARM Cortex-M-class microcontrollers**.
+**OemgaSqueeze** is a lightweight, purpose-built neural network compiler that translates PyTorch 1D CNN and Linear models into highly optimized, zero-dependency C code.
 
----
+Designed for ultra-constrained edge AI, it removes the overhead of heavy third-party inference runtimes and instead statically compiles models into a standalone execution pipeline. The generated output is built to fit deeply embedded deployment settings, with a strong focus on **biosensor intelligence**, **predictable memory usage**, and **Zephyr RTOS integration**.
+
+Rather than acting as a generic inference runtime, OemgaSqueeze follows a compile-first philosophy: take a trained model, lower it into a static embedded execution plan, and emit lean C code that is transparent, portable, and firmware-friendly.
 
 ## Why OemgaSqueeze?
 
-Traditional ML deployment stacks are often too heavy for deeply embedded systems. OemgaSqueeze is designed for the opposite end of the spectrum:
+Modern ML deployment tooling is often too heavy for tiny embedded systems. OemgaSqueeze is designed for the opposite regime:
 
 - ultra-low-power microcontrollers
 - predictable memory usage
 - zero dynamic allocation
-- minimal firmware overhead
-- efficient continuous inference on time-series signals
+- low firmware overhead
+- efficient continuous inference on time-series data
 
-This makes it especially well suited for **real-time biosignal edge AI**, including applications such as **EMG-based gesture recognition** on wearable devices.
-
----
+This makes it especially relevant for embedded systems where memory, latency, and deployment simplicity matter more than broad framework coverage.
 
 ## Key Features
 
-- **Zero-dependency C output**  
+- **Zero-dependency bare-metal C**  
   Generates pure C source and header files such as `oemga_model.c` with no external inference libraries required.
 
 - **No dynamic memory allocation**  
-  No `malloc`, no runtime heap dependency, and no hidden framework overhead.
+  No `malloc`, no heap dependency, and no hidden runtime overhead.
 
-- **Static memory planning**  
-  Uses ping-pong activation buffers and shared convolution scratchpads to keep SRAM usage bounded and predictable.
+- **Aggressive static memory planning**  
+  Uses ping-pong activation buffers and shared scratchpads to keep SRAM usage bounded and predictable.
 
-- **INT8 post-training quantization**  
-  Profiles calibration data and quantizes weights and activations to INT8, with INT32 biases and per-channel requantization.
+- **Zephyr RTOS ready**  
+  Can generate an embedded application structure with files such as `main.c`, `CMakeLists.txt`, and `prj.conf` for straightforward Zephyr integration.
 
-- **Zephyr-ready code generation**  
-  Can emit an embedded application structure with files such as `main.c`, `CMakeLists.txt`, and `prj.conf` for direct Zephyr integration.
+- **Pre-flight hardware cost analysis**  
+  Provides a breakdown of estimated Flash and RAM requirements before deployment, including model parameters, double buffers, and scratch memory.
 
-- **Pre-deployment hardware cost analysis**  
-  Estimates flash and RAM consumption before deployment, including model weights, requantization parameters, double buffers, and scratch memory.
-
-- **Host-to-target verification flow**  
-  Generates a lightweight host-side C verifier to compare quantized C inference against the original PyTorch model using metrics such as macro F1 and logit difference reporting.
-
----
+- **Host-to-target verification**  
+  Generates a lightweight host-side verifier to compare generated C inference against the original PyTorch model using metrics such as macro F1 and logit difference reporting.
 
 ## Ideal Use Cases
 
-OemgaSqueeze is optimized for low-power, continuous-monitoring edge applications.
+OemgaSqueeze is optimized for low-power, continuous embedded inference workloads.
 
-### Biosignal Edge AI
-Run continuous inference directly on sensor nodes for 1D time-series data such as:
+### Biosensor Intelligence
+Designed for intelligent sensing systems where models must execute directly on-device under strict resource limits.
 
-- EMG
-- ECG
-- IMU-derived streams
-- other wearable biosignals
-
-### Open-Source Wearables
-Designed for custom embedded AI platforms and open wearable systems where low latency and tight resource control matter.
+### Open Embedded Platforms
+Useful for custom wearable, sensing, and edge devices that require a lean firmware-oriented ML deployment path.
 
 ### Strict RTOS Environments
-Useful in systems where the following are critical:
+A strong fit for systems where the following are critical:
 
 - bounded memory usage
 - deterministic execution
-- low flash footprint
-- low runtime overhead
-
----
+- minimal flash footprint
+- transparent generated code
+- straightforward integration into firmware stacks
 
 ## Installation
 
