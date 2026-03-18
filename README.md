@@ -7,7 +7,6 @@
 <p align="center">
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"/>
-  </a>
   <img src="https://img.shields.io/badge/PyTorch-Frontend-ee4c2c.svg" alt="PyTorch Frontend"/>
   <img src="https://img.shields.io/badge/Codegen-Pure%20C-00599C.svg" alt="Pure C Codegen"/>
   <img src="https://img.shields.io/badge/Quantization-INT8-7A3E9D.svg" alt="INT8 Quantization"/>
