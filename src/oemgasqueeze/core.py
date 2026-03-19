@@ -2130,8 +2130,9 @@ class OemgaSqueeze:
         os.makedirs(include_dir, exist_ok=True)
         os.makedirs(src_dir, exist_ok=True)
         return root, include_dir, src_dir
-
+    
     def generate_model_api_header(self, include_dir: str) -> str:
+        input_len = self.example_input.shape[-1] 
         path = os.path.join(include_dir, "oemga_model.h")
         with open(path, "w", encoding="utf-8") as f:
             f.write(
@@ -2142,7 +2143,7 @@ class OemgaSqueeze:
     extern "C" {
     #endif
 
-    #define OEMGA_INPUT_LENGTH 64
+    #define OEMGA_INPUT_LENGTH {input_len}
     #define OEMGA_INPUT_CHANNELS 1
     #define OEMGA_OUTPUT_CLASSES 4
 
@@ -2445,8 +2446,10 @@ class OemgaSqueeze:
         [1, 64] or [64]
         """
         x = np.asarray(x_sample, dtype=np.float32).reshape(-1)
-        if x.size != 64:
-            raise ValueError(f"Expected 64 values, got {x.size}")
+        # Get expected length from the graph spec or example input
+        expected_len = self.example_input.shape[-1]
+        if x.size != expected_len:
+            raise ValueError(f"Expected {expected_len} values, got {x.size}")
 
         stdin_text = " ".join(f"{float(v):.9f}" for v in x) + "\n"
 
