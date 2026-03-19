@@ -11,6 +11,16 @@
   <img src="https://img.shields.io/badge/Target-Zephyr%20RTOS-black.svg" alt="Zephyr RTOS"/>
 </p>
 
+<div align="center">
+  <table>
+    <tr>
+      <td>
+<img width="600" height="1352" alt="Untitled design (1)" src="https://github.com/user-attachments/assets/929fb8c4-9cbe-4fae-b570-53d4baa5a173" />
+      </td>
+    </tr>
+  </table>
+</div>
+
 ## Overview
 
 **OemgaSqueeze** compiles PyTorch models into lean, firmware-native C for ultra-constrained edge devices.
