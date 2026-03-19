@@ -2132,29 +2132,31 @@ class OemgaSqueeze:
         return root, include_dir, src_dir
     
     def generate_model_api_header(self, include_dir: str) -> str:
+        # Safely get the input length from the tensor shape
         input_len = self.example_input.shape[-1] 
+        output_classes = self.model(self.example_input).shape[-1]
+        
         path = os.path.join(include_dir, "oemga_model.h")
         with open(path, "w", encoding="utf-8") as f:
-            f.write(
-                """#pragma once
+            # Note the f""" and the double {{ }} for C syntax
+            f.write(f"""#pragma once
     #include <stdint.h>
 
     #ifdef __cplusplus
-    extern "C" {
+    extern "C" {{
     #endif
 
     #define OEMGA_INPUT_LENGTH {input_len}
     #define OEMGA_INPUT_CHANNELS 1
-    #define OEMGA_OUTPUT_CLASSES 4
+    #define OEMGA_OUTPUT_CLASSES {output_classes}
 
     void oemga_forward_int8(const int8_t* input_q, int8_t* output_q);
     void oemga_forward_f32(const float* input_f, float* output_f, int input_len);
 
     #ifdef __cplusplus
-    }
+    }}
     #endif
-    """
-            )
+    """)
         return path
 
     def generate_weights_header(self, include_dir: str) -> str:
