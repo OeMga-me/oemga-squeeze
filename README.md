@@ -1,7 +1,7 @@
 <h1 align="center">OeMga.me Squeeze</h1>
 
 <p align="center">
-  <strong>A neural network compiler stack for ultra-low-power biosensor intelligence.</strong>
+  <strong>A neural network compiler stack for ultra low-power biosensor intelligence.</strong>
 </p>
 
 <p align="center">
